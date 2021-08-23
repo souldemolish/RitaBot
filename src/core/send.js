@@ -13,14 +13,14 @@ const fn = require("./helpers");
 const db = require("./db");
 const logger = require("./logger");
 const discord = require("discord.js");
-const webHookName = "Translator Messaging System";
+const webHookName = "RITA Messaging System";
 const error = require("./error");
 
 // -----------------
 // Permission Check
 // -----------------
 
-const checkPerms = function checkPerms (data, sendBox)
+function checkPerms (data, sendBox)
 {
 
    // ------------------------------------------------------------------------
@@ -32,7 +32,7 @@ const checkPerms = function checkPerms (data, sendBox)
 
       var sendData = {
          "attachments": data.message.attachments,
-         "bot": data.bot,
+         "bot": data.message.client.user,
          "channel": data.message.channel,
          "color": data.color,
          "config": data.config,
@@ -59,10 +59,10 @@ const checkPerms = function checkPerms (data, sendBox)
       // console.log("DEBUG: Perms Error, Write Restricted 1");
       // console.log(`DEBUG: Perm Check 1 ${data.canWrite}`);
       const writeErr =
-         `:no_entry:  **${data.bot.username}** does not have permission to write in ` +
+         `:no_entry:  **${data.message.client.user.username}** does not have permission to write in ` +
          `the ${sendData.channel.id} channel on your server **` +
          `${sendData.channel.guild.name}**. Please fix.`;
-
+      console.log("DEBUG: Line 65 - Send.js");
       return sendData.channel.guild.owner.
          send(writeErr).
          catch((err) => console.log("error", err, "warning", data.message.guild.name));
@@ -73,7 +73,7 @@ const checkPerms = function checkPerms (data, sendBox)
    if (data.forward)
    {
 
-      const forwardChannel = data.client.channels.cache.get(data.forward);
+      const forwardChannel = data.message.client.channels.cache.get(data.forward);
 
       if (forwardChannel)
       {
@@ -134,16 +134,17 @@ const checkPerms = function checkPerms (data, sendBox)
                   Server: **${data.channel.guild.name}** \n
                   Channel: **${forwardChannel.name}**\n
                   Chan ID: **${forwardChannel.id}**\n
-                  Owner: **${data.channel.guild.owner}**\n
+                  Server ID: **${data.message.sourceID}**\n
+                  Owner: **${data.message.guild.owner} - ${data.message.guild.owner.user.tag}**\n
                   The server owner has been notified . \n`
             });
 
             // console.log("DEBUG: Perms Error, Write Restricted 2");
             const writeErr =
-            `:no_entry:  **${data.bot.username}** does not have permission to write in ` +
+            `:no_entry:  **${data.message.client.user.username}** does not have permission to write in ` +
             `the ${forwardChannel.name} channel on your server **` +
             `${sendData.channel.guild.name}**. Please fix.`;
-
+            console.log("DEBUG: Line 147 - Send.js");
             return sendData.channel.guild.owner.
                send(writeErr).
                catch((err) => console.log("error", err, "warning", sendData.channel.guild.name));
@@ -177,12 +178,12 @@ const checkPerms = function checkPerms (data, sendBox)
    if (data.showAuthor)
    {
 
-      sendData.author = data.message.author;
+      sendData.message.author = data.message.author;
 
-      if (data.author)
+      if (data.message.author)
       {
 
-         sendData.author = data.author;
+         sendData.message.author = data.message.author;
 
       }
 
@@ -194,13 +195,13 @@ const checkPerms = function checkPerms (data, sendBox)
 
    return sendBox(sendData);
 
-};
+}
 
 // ----------------------------
 // Embedded Variable "On" Code
 // ----------------------------
 
-const embedOn = function embedOn (data)
+function embedOn (data)
 {
 
    // -----------------------------------------------
@@ -208,7 +209,7 @@ const embedOn = function embedOn (data)
    // Only if content is forwared to another channel
    // -----------------------------------------------
 
-   const sendEmbeds = function sendEmbeds (data)
+   function sendEmbeds (data)
    {
 
       if (data.forward && data.embeds && data.embeds.length > 0)
@@ -239,13 +240,13 @@ const embedOn = function embedOn (data)
 
       }
 
-   };
+   }
 
    // -------------------
    // Resend attachments
    // -------------------
 
-   const sendAttachments = function sendAttachments (data)
+   function sendAttachments (data)
    {
 
       if (!data.attachments)
@@ -288,23 +289,23 @@ const embedOn = function embedOn (data)
 
       }
 
-   };
+   }
 
    // ----------
    // Send data
    // ----------
 
-   const sendBox = function sendBox (data)
+   function sendBox (data)
    {
 
 
       /*
-      If (data.author)
+      If (data.message.author)
       {
-         data.author = {
-            name: data.author.username,
+         data.message.author = {
+            name: data.message.author.username,
             //eslint-disable-next-line camelcase
-            icon_url: data.author.displayAvatarURL()
+            icon_url: data.message.author.displayAvatarURL()
          };
       }*/
 
@@ -313,15 +314,15 @@ const embedOn = function embedOn (data)
 
          {
 
-            if (!data.author)
+            if (!data.message.author)
             {
 
                // console.log("DEBUG: Is bot.author - embed on");
                // eslint-disable-next-line no-redeclare
                var embed = {
                   "author": {
-                     "icon_url": data.bot.displayAvatarURL(),
-                     "name": data.bot.username
+                     "icon_url": data.message.client.user.displayAvatarURL(),
+                     "name": data.message.client.user.username
                   },
                   "color": colors.get(data.color),
                   "description": data.text,
@@ -334,12 +335,12 @@ const embedOn = function embedOn (data)
             else
             {
 
-               // console.log("DEBUG: Is data.author - embed on");
+               // console.log("DEBUG: Is data.message.author - embed on");
                // eslint-disable-next-line no-redeclare
                var embed = {
                   "author": {
                      "icon_url": data.message.author.displayAvatarURL(),
-                     "name": data.author.username
+                     "name": data.message.author.username
                   },
                   "color": colors.get(data.color),
                   "description": data.text,
@@ -388,7 +389,8 @@ const embedOn = function embedOn (data)
                   Server: **${data.guild.name}** \n
                   Channel: **${data.channel.name}**\n
                   Chan ID: **${data.channel.id}**\n
-                  Owner: **${data.channel.guild.owner}**\n
+                  Server ID: **${data.message.sourceID}**\n
+                  Owner: **${data.message.guild.owner}**\n
                   The server owner has been notified. \n`
                   });
 
@@ -405,7 +407,11 @@ const embedOn = function embedOn (data)
                   Channel: **${data.channel.name}**\n
                   Chan ID: **${data.channel.id}**\n
                   Owner: **${data.channel.guild.owner}**\n`
-                  });
+                  }).catch((err) => console.log(
+                     "error",
+                     err,
+                     "warning"
+                  ));
 
                }
 
@@ -420,7 +426,11 @@ const embedOn = function embedOn (data)
                   Channel: **${data.channel.name}**\n
                   Chan ID: **${data.channel.id}**\n
                   Owner: **${data.channel.guild.owner}**\n`
-                  });
+                  }).catch((err) => console.log(
+                     "error",
+                     err,
+                     "warning"
+                  ));
 
                }
 
@@ -450,13 +460,22 @@ const embedOn = function embedOn (data)
                            "```prolog\nServer > Privacy Settings > " +
                            "'Allow direct messages from server members'\n```");
 
-                  });
+                  }).catch((err) => console.log(
+                     "error",
+                     err,
+                     "warning"
+                  ));
 
                }
 
                logger("error", errMsg, "warning", data.message.channel.guild.name);
 
-            });
+            }).
+            catch((err) => console.log(
+               "error",
+               err,
+               "warning"
+            ));
 
       }
       else if (data.attachments.array().length > 0)
@@ -466,17 +485,17 @@ const embedOn = function embedOn (data)
 
       }
 
-   };
+   }
 
    return checkPerms(data, sendBox);
 
-};
+}
 
 // -----------------------------
 // Embedded Variable "Off" Code
 // -----------------------------
 
-const embedOff = function embedOff (data)
+function embedOff (data)
 {
 
    // -------------
@@ -545,35 +564,35 @@ const embedOff = function embedOff (data)
             "avatarURL": data.message.author.displayAvatarURL(),
             files,
             "username": data.message.author.username
-         });
+         }).catch((err) => console.log("error", err, "send", data.message.guild.name));
 
       }
 
       {
 
-         if (!data.author)
+         if (!data.message.author)
          {
 
             // console.log("DEBUG: Is bot.author embed off");
             webhook.send(data.text, {
                // If you get a error at the below line then the bot does not have write permissions.
 
-               "avatarURL": data.bot.displayAvatarURL(),
+               "avatarURL": data.message.client.user.displayAvatarURL(),
                files,
-               "username": data.bot.username || data.message
+               "username": data.message.client.user.username || data.message
             });
 
          }
          else
          {
 
-            // console.log("DEBUG: Is data.author embed off");
+            // console.log("DEBUG: Is data.message.author embed off");
             webhook.send(data.text, {
                // If you get a error at the below line then the bot does not have write permissions.
 
-               "avatarURL": data.author.displayAvatarURL(),
+               "avatarURL": data.message.author.displayAvatarURL(),
                files,
-               "username": data.author.username || data.message
+               "username": data.message.author.username || data.message
             });
 
          }
@@ -586,7 +605,7 @@ const embedOff = function embedOff (data)
    // Resend attachments
    // -------------------
 
-   const sendAttachments = function sendAttachments (data)
+   function sendAttachments (data)
    {
 
       if (!data.attachments && !data.attachments.array().length > 0)
@@ -629,13 +648,13 @@ const embedOff = function embedOff (data)
 
       }
 
-   };
+   }
 
    // ---------------------
    // Send Data to Channel
    // ---------------------
 
-   const sendBox = function sendBox (data)
+   function sendBox (data)
    {
 
       const channel = data.channel;
@@ -659,7 +678,7 @@ const embedOff = function embedOff (data)
       if (!avatarURL)
       {
 
-         avatarURL = data.author;
+         avatarURL = data.message.author;
 
       }
 
@@ -670,8 +689,9 @@ const embedOff = function embedOff (data)
       if (data.channel.type === "dm")
       {
 
+         console.log("DEBUG: Line 690 - Send.js");
          const embed = new discord.MessageEmbed().
-            setAuthor(data.author.username, data.author.displayAvatarURL()).
+            setAuthor(data.message.author.username, data.message.author.displayAvatarURL()).
             setColor(colors.get(data.color)).
             setDescription(data.text).
             setFooter(data.footer.text);
@@ -688,7 +708,7 @@ const embedOff = function embedOff (data)
             {
 
                // You can rename 'Webhook' to the name of your bot if you like, people will see if under the webhooks tab of the channel.
-               existingWebhook = webhooks.find((x) => x.name === webHookName);
+               const existingWebhook = webhooks.find((x) => x.name === webHookName);
                const webHookURL = "https://ritabot.gg/index/images/favicon.png";
 
                if (!existingWebhook)
@@ -715,12 +735,12 @@ const embedOff = function embedOff (data)
 
       }
 
-   };
+   }
 
 
    checkPerms(data, sendBox);
 
-};
+}
 
 // ---------------------
 // Send Data to Channel
@@ -740,7 +760,6 @@ module.exports = function run (data)
    // Primary If Statment
    // --------------------
    const embedstyle = db.server_obj[data.message.guild.id].db.embedstyle;
-
    if (embedstyle === "on")
    {
 
@@ -762,8 +781,7 @@ module.exports = function run (data)
       return embedOn(data);
 
    }
-   else
-   if (data.message.guild.me.permissions.has("MANAGE_WEBHOOKS"))
+   else if (data.message.guild.me.permissions.has("MANAGE_WEBHOOKS"))
    {
 
       // console.log("DEBUG: Embed off");
@@ -789,7 +807,7 @@ module.exports = function run (data)
    // Console.log(after - before);
 
    // console.log("DEBUG: Perms Error");
-   data.text = `:warning: ${data.bot.username} does not have sufficient permissions to send Webhook Messages. Please give ${data.bot.username} the \`MANAGE_WEBHOOKS\` permission.`;
+   data.text = `:warning: ${data.message.client.user.username} does not have sufficient permissions to send Webhook Messages. Please give ${data.message.client.user.username} the \`MANAGE_WEBHOOKS\` permission.`;
    data.color = "warn";
 
    return data.channel.send({"embed": {

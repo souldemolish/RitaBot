@@ -74,14 +74,17 @@ module.exports = function run (data, client)
 
             }
 
-            message.content = message.content.replace(/<.*?>/g, "");
+            message.content = message.content.
+               replace(/<@.*?>/g, "").
+               replace(/@everyone/gi, "").
+               replace(/@here/gi, "");
 
 
             const flagExists = message.reactions.cache.get(emoji);
 
             // Prevent flag spam
 
-            if (flagExists)
+            if (flagExists.count > 1)
             {
 
                return;
@@ -101,7 +104,7 @@ module.exports = function run (data, client)
 
             data.message = message;
             delete data.message.attachments;
-            data.message.roleColor = fn.getRoleColor(data.message.member);
+            data.member.displayColor = fn.getRoleColor(data.message.member);
             data.canWrite = true;
 
             // ------------------

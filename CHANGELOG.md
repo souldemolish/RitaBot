@@ -1,3 +1,69 @@
+## 1.2.5 Change Log
+* Since the launch of 1.2.4 Rita has grown by 800 servers, This is Amazing. From all the RITA Dev Team, We cant thank you enough. 
+
+### 1.2.5 Major Changes
+* db.js has had a overhaul
+* Database has been migrated to a larger DB, We wont be needing to do that again for a good 5 years. 
+
+### 1.2.5 Bug Fixes
+* Color now working in `Embed on` and takes user role color.
+* Stop command for @user has now been fixed
+ 
+### 1.2.5 Command Changes
+* Welcome message added for all new servers. System Channel is default, if not available it will pick first channel that has Write permissions. 
+* Announcement command added, This is Restreicted to DEV ONLY.
+* Opt in and out commands added for announcements. 
+* `!tr settings persist [on/off]` command has been added, this will prevent bot responses from being deleted.
+ 
+### 1.2.5 Database Changes
+* Validation Checks added at startup to avoid Blacklist and Stats SQL Errors
+ 
+### 1.2.5 Misc. Changes
+* New Debug Settings for console.
+* MESSAGE_DEBUG
+  > 0 - Error's Only
+  
+  > 1 - Console for all Messages
+  
+  > 2 - Console for Translate Messages only
+  
+  > 3 - Content of all Messages
+  
+  > 4 - Content of Translate Messages only
+  
+  > 5 - Commands Only
+
+## 1.2.4 Change Log
+* BIG ANNOUNCEMENT - RITA IS NOW VERIFIED
+
+* With the introduction of Version 1.2.4, we have added in a bunch of new commands. 
+* We have now been Verified, so you can invite RITA by going to https://ritabot.gg/invite
+
+### 1.2.4 Major Changes
+* Dev only Command handler has been added in to enable fast changes to command restrictions. 
+
+### 1.2.4 Bug Fixes
+* Lots of little things, nothing of consequence. 
+ 
+### 1.2.4 Command Changes
+* `!tr history` shows Development History of the bot.
+* `!tr stats server [ServerID]` shows stats for the targets server.
+* `!tr blacklist [ServerID]` Blacklists a server (Developers Only).
+* `!tr unblacklist [ServerID]` un-Blacklists a server (Developers Only).
+* `!tr warn [ServerID]` Warns a server (Developers Only).
+* `!tr unwarn [ServerID]` un-Warns a server (Developers Only).
+* `!tr eject [ServerID]` Removes RITA from the target server (Developers Only).
+* `!tr check [ServerID]` Checks Warn & Blacklist status of the given server.
+* `!tr checkperms [bot/user]` checks permissions of the bot and the user for RITA compatibility.
+ 
+### 1.2.4 Database Changes
+* A new column has been added to manage blacklisting and Warning, backwards compatible to all previous versions.
+ 
+### 1.2.4 Misc. Changes
+* Once again Zycore broke something (a lot of times) Zycore fixed it again.
+* Help muenus update with new commands.
+* Help menus has been reworked, Still a work in progress but they look much better now. 
+
 ## 1.2.3 Change Log
 * With the introduction of Version 1.2.3, we have updated the translate API. This is still the same as before but its now providing a much better accuracy rate than before.
 * We are still waiting for Discord to Verify RITA, so for now we are limited to 100 servers, We are at that limit at the moment so keep and eye out for the little blue tick, Once you see it you can invite RITA to your server. Please join our discord for more info. https://discord.gg/AtJcjvnkg6

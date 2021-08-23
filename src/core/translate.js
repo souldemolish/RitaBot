@@ -9,6 +9,7 @@ const translate = require("rita-google-translate-api");
 const db = require("./db");
 const botSend = require("./send");
 const fn = require("./helpers");
+const auth = require("../core/auth");
 
 // ------------------------------------------
 // Fix broken Discord tags after translation
@@ -21,6 +22,8 @@ function discordPatch (string)
 
    // eslint-disable-next-line no-useless-escape
    const urlRegex = /(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?/giu;
+
+   // let regexFix = string.replace(/:[^\s]*?:/gmi);
 
    let match = string.match(/<.*?>/gmiu);
    let everyonePing = string.match(/@everyone|@here/giu);
@@ -53,12 +56,22 @@ function discordPatch (string)
    {
 
       const str = match[i];
-      const text = str.slice(1, -1);
-      const textMatch = text.match(/[a-z\s.!,()0-9]/gi);
-      if (textMatch.length === text.length)
+      if (!str.match(/<:.*?:([0-9])>/))
       {
 
-         match[i] = text;
+         const text = str.slice(1, -1);
+         const textMatch = text.match(/[a-z\s.!,()0-9]/gi);
+         if (textMatch)
+         {
+
+            if (textMatch.length === text.length)
+            {
+
+               match[i] = text;
+
+            }
+
+         }
 
       }
 
@@ -79,7 +92,8 @@ function discordPatch (string)
 
 }
 
-const translateFix = function translateFix (string, matches)
+
+function translateFix (string, matches)
 {
 
    let text = string;
@@ -105,7 +119,23 @@ const translateFix = function translateFix (string, matches)
    return text;
 
 
-};
+}
+// ------------
+// Retranslation function using auto if it thinks it is in the wrong language
+// ------------
+async function reTranslate (matches, opts)
+{
+
+   const OPTIONS = {
+      "from": "auto",
+      "to": opts.to
+
+
+   };
+   const res = await translate(matches.text, OPTIONS);
+   return translateFix(res.text, matches);
+
+}
 
 // ---------------------------------------
 // Get user color for translated response
@@ -118,13 +148,13 @@ function getUserColor (data, callback)
    const fw = data.forward;
    const txt = data.text;
    const ft = data.footer;
-   const usr = data.author;
+   const usr = data.message.author;
    const msg = data.message;
 
    data.forward = fw;
    data.text = txt;
    data.footer = ft;
-   data.author = usr;
+   data.message.author = usr;
    data.message = msg;
 
 
@@ -137,7 +167,7 @@ function getUserColor (data, callback)
 // Translate buffered chains
 // --------------------------
 
-const bufferSend = function bufferSend (arr, data)
+function bufferSend (arr, data)
 {
 
    const sorted = fn.sortByKey(
@@ -149,21 +179,22 @@ const bufferSend = function bufferSend (arr, data)
 
       data.text = msg.text;
       data.color = msg.color;
-      data.author = msg.author;
+      data.message.author = msg.author;
       data.showAuthor = true;
       data.message = msg;
 
       // -------------
       // Send message
       // -------------
-
+      console.log(`Transalte 1`);
       botSend(data);
 
    });
 
-};
+}
 
-const bufferChains = function bufferChains (data, from)
+// eslint-disable-next-line no-unused-vars
+function bufferChains (data, from, guild)
 {
 
    const translatedChains = [];
@@ -213,7 +244,7 @@ const bufferChains = function bufferChains (data, from)
             {
 
                translatedChains.push({
-                  "author": gotData.author,
+                  "author": gotData.message.author,
                   "color": gotData.color,
                   "text": output,
                   "time": chain.time
@@ -239,13 +270,13 @@ const bufferChains = function bufferChains (data, from)
 
    });
 
-};
+}
 
 // ---------------------
 // Invalid lang checker
 // ---------------------
 
-const invalidLangChecker = function invalidLangChecker (obj, callback)
+function invalidLangChecker (obj, callback)
 {
 
    if (obj && obj.invalid && obj.invalid.length > 0)
@@ -255,13 +286,13 @@ const invalidLangChecker = function invalidLangChecker (obj, callback)
 
    }
 
-};
+}
 
 // --------------------
 // Update server stats
 // --------------------
 
-const updateServerStats = function updateServerStats (message)
+function updateServerStats (message)
 {
 
    const col = "translation";
@@ -277,7 +308,7 @@ const updateServerStats = function updateServerStats (message)
    db.increaseServersCount(id);
    db.increaseStatsCount(col, id);
 
-};
+}
 
 // ----------------
 // Run translation
@@ -285,12 +316,6 @@ const updateServerStats = function updateServerStats (message)
 
 module.exports = function run (data) // eslint-disable-line complexity
 {
-
-   // -------------------
-   // Get message author
-   // -------------------
-
-   data.author = data.message.author;
 
    // -------------------------
    // Report invalid languages
@@ -438,7 +463,7 @@ module.exports = function run (data) // eslint-disable-line complexity
             {
 
                data.text = this.text;
-               data.color = data.message.roleColor;
+               data.color = data.member.displayColor;
                data.showAuthor = true;
                getUserColor(
                   data,
@@ -525,38 +550,11 @@ module.exports = function run (data) // eslint-disable-line complexity
       translate(
          matches.text,
          opts
-      ).then((res) =>
+      ).then(async (res) =>
       {
 
          res.text = translateFix(res.text, matches);
-         if (res.text.toLowerCase() === matches.original.toLowerCase())
-         {
 
-            const match = matches.text.replace(/\s*?/g, "").match(/[<>]/g);
-            if (!matches.text.startsWith("http"))
-            {
-
-               if (match)
-               {
-
-                  if (match.length !== matches.text.length)
-                  {
-
-                     return;
-
-                  }
-
-               }
-               else
-               {
-
-                  return;
-
-               }
-
-            }
-
-         }
 
          const langTo = opts.to;
 
@@ -564,25 +562,35 @@ module.exports = function run (data) // eslint-disable-line complexity
          const detectedLang = res.from.language.iso;
          // Language you set when setting up !t channel command
          const channelFrom = from;
-         if (detectedLang === langTo)
+
+         if (detectedLang === langTo || detectedLang !== channelFrom && channelFrom !== "auto")
          {
 
-            return;
+            // eslint-disable-next-line require-atomic-updates
+            res.text = await reTranslate(matches, opts);
+
 
          }
-         else if (detectedLang !== channelFrom && channelFrom !== "auto")
-         {
 
-            return;
-
-         }
 
          updateServerStats(data.message);
          data.forward = fw;
          data.footer = ft;
-         data.color = data.message.roleColor;
+         data.color = data.member.displayColor;
          data.text = res.text;
          data.showAuthor = true;
+         if (auth.messagedebug === "4")
+         {
+
+            console.log(`MD4: ${data.message.guild.name} - ${data.message.guild.id} - ${data.message.createdAt}\nMesssage User - ${data.message.author.tag}\nMesssage Content - ${data.message.content}\nTranslated from: ${detectedLang} to: ${langTo}\n----------------------------------------`);
+
+         }
+         if (auth.messagedebug === "2")
+         {
+
+            console.log(`MD2: ${data.message.guild.name} - ${data.message.guild.id} - ${data.message.createdAt}`);
+
+         }
          return getUserColor(
             data,
             botSend

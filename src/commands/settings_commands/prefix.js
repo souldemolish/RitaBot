@@ -1,4 +1,3 @@
-
 // -----------------
 // Global variables
 // -----------------
@@ -13,7 +12,7 @@ const message = require("../../message");
 // Prefix varible command handler
 // -------------------------------
 
-const prefix = function prefix (data)
+function prefix (data)
 {
 
    const newPrefix = data.cmd.params.split(" ")[0].toLowerCase();
@@ -101,7 +100,7 @@ const prefix = function prefix (data)
 
    return sendMessage(data);
 
-};
+}
 
 // -----------------------
 // Command code

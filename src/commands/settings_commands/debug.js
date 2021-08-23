@@ -1,9 +1,9 @@
-/* eslint-disable vars-on-top */
 // -----------------
 // Global variables
 // -----------------
 
 // Codebeat:disable[LOC,ABC,BLOCK_NESTING,ARITY]
+/* eslint-disable vars-on-top */
 const db = require("../../core/db");
 const logger = require("../../core/logger");
 const sendMessage = require("../../core/command.send");
@@ -39,8 +39,7 @@ const debuging = async function debuging (data)
    if (commandVariable1 === "on")
    {
 
-      // console.log("DEBUG on 1");
-      console.log(`Debug on 1 ${process.env.DISCORD_DEBUG_WEBHOOK_ID}`);
+      // console.log(`DEBUG on 1 ${process.env.DISCORD_DEBUG_WEBHOOK_ID}`);
       // Checks if there iS an item in the channels collection that corresponds with the supplied parameters, returns a boolean
       const check = (element) => element.name === "ritabot-debug";
       Setup:if (webhookIDVar !== process.env.DISCORD_DEBUG_WEBHOOK_ID)
@@ -94,8 +93,8 @@ const debuging = async function debuging (data)
 
       const hooks = await chan.fetchWebhooks();
       const webhookValue = hooks.find((webhook) => webhook.name === "Rita Diagnostic Tool");
-      console.log(`The ID is  ${webhookValue.id}`);
-      console.log(`The Token is  ${webhookValue.token}`);
+      // console.log(`DEBUG: The ID is  ${webhookValue.id}`);
+      // console.log(`DEBUG: The Token is  ${webhookValue.token}`);
 
       // console.log(`DEBUG: debug variable ${commandVariable1}`);
       return db.updateWebhookVar(
@@ -146,8 +145,10 @@ const debuging = async function debuging (data)
    {
 
       // console.log(`DEBUG: debug variable ${commandVariable1}`);
-      return db.removeWebhook(
+      return db.updateServerTable(
          data.message.channel.guild.id,
+         "webhookactive",
+         false,
          function error (err)
          {
 

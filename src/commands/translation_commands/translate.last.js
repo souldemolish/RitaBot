@@ -26,8 +26,8 @@ module.exports.run = function run (data)
    ));
    return data.message.channel.send({"embed": {
       "author": {
-         "icon_url": data.client.user.displayAvatarURL(),
-         "name": data.client.user.username
+         "icon_url": data.message.client.user.displayAvatarURL(),
+         "name": data.message.client.user.username
       },
       "color": 13107200,
       "description": `:no_entry_sign: This command has been disabled Pending a fix \n
@@ -46,7 +46,7 @@ module.exports.run = function run (data)
 };
 
 
-const getCount = function getCount (count)
+function getCount (count)
 {
 
    if (count)
@@ -57,7 +57,7 @@ const getCount = function getCount (count)
    }
    return "-1";
 
-};
+}
 
 // ---------------
 // Translate last

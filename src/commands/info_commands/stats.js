@@ -3,6 +3,7 @@
 // -----------------
 
 // Codebeat:disable[LOC,ABC,BLOCK_NESTING,ARITY]
+/* eslint-disable consistent-return */
 const langCheck = require("../../core/lang.check");
 const db = require("../../core/db");
 const auth = require("../../core/auth");
@@ -43,15 +44,15 @@ module.exports = function run (data)
       const activeTasks = stats[0].activeTasks - stats[0].activeUserTasks;
 
       const globalStats =
-         `**\`\`\`@${data.bot.username} - Global Stats\`\`\`**\n` +
+         `**\`\`\`@${data.message.client.user.username} - Global Stats\`\`\`**\n` +
          `:earth_africa:  Default bot language:  **\`${botLang.name} (${botLang.native})\`**\n\n` +
-         `:bar_chart:  Translated **\`${stats[0].totalCount}\`** messages across  **\`${data.client.guilds.cache.size}\`**  servers for  **\`${db.server_obj.size}\`**  users\n\n` +
+         `:bar_chart:  Translated **\`${stats[0].totalCount}\`** messages across  **\`${data.message.client.guilds.cache.size}\`**  servers for  **\`${db.server_obj.size}\`**  users\n\n` +
          `:regional_indicator_v:  Version:  ${version}\n\n` +
          `:repeat:  Automatic translation:  **\`${activeTasks}\`**  channels and **\`${stats[0].activeUserTasks}\`**  users\n`;
 
       const translationGlobalStats =
-         `**\`\`\`@${data.bot.username} - Global Tranlation Stats\`\`\`**\n` +
-         `:bar_chart:  In total **\`${stats[0].message}\`** messages across **\`${data.client.guilds.cache.size}\`** servers have been sent\n\n` +
+         `**\`\`\`@${data.message.client.user.username} - Global Tranlation Stats\`\`\`**\n` +
+         `:bar_chart:  In total **\`${stats[0].message}\`** messages across **\`${data.message.client.guilds.cache.size}\`** servers have been sent\n\n` +
          `:chart_with_upwards_trend:  RITA has translated **\`${stats[0].translation}\`**  for these servers\n\n` +
          `:frame_photo:  A total of **\`${stats[0].images}\`**  images have been sent and **\`${stats[0].gif}\`** Gif's have been shared\n\n` +
          `:flag_white:  **\`${stats[0].react}\`**  messages have been translated with flag reactions \n\n` +
@@ -170,13 +171,104 @@ module.exports = function run (data)
       if (data.cmd.params && data.cmd.params.toLowerCase().includes("server"))
       {
 
-         data.text = `${serverStats}\n\n${serverTranslationStats}`;
+         if (!data.cmd.num)
+         {
 
-         // -------------
-         // Send message
-         // -------------
+            data.text = `${serverStats}\n\n${serverTranslationStats}`;
 
-         return sendMessage(data);
+            // -------------
+            // Send message
+            // -------------
+
+            return sendMessage(data);
+
+         }
+         // eslint-disable-next-line no-unused-vars
+         const serverID = data.cmd.params.split(" ")[1].toLowerCase();
+         const target = data.message.client.guilds.cache.get(serverID);
+
+         db.getServerInfo(
+            serverID,
+            function getServerInfo (server)
+            {
+
+               if (!target)
+               {
+
+                  const targetServer = `**\`\`\`${serverID} - Server Tranlation Stats\`\`\`**\n` +
+                     `Server Joined Rita Network: \`\`\`${server[0].createdAt}\`\`\`\n` +
+                     `:bar_chart:  In total **\`${server[0].message}\`** messages in this server have been sent\n\n` +
+                     `:chart_with_upwards_trend:  RITA has translated **\`${server[0].translation}\`**  for this server\n\n` +
+                     `:frame_photo:  A total of **\`${server[0].images}\`**  images have been sent and **\`${server[0].gif}\`** Gif's have been shared\n\n` +
+                     `:flag_white:  **\`${server[0].react}\`**  messages have been translated with flag reactions \n\n` +
+                     `:notebook:  **\`${server[0].embedon}\`**  messages have been sent in **\`Embed On\`** format\n\n` +
+                     `:speech_balloon:  **\`${server[0].embedoff}\`**  messages have been sent in **\`Embed Off\`** format\n`;
+
+                  data.text = `${targetServer}\n\n`;
+
+                  // -------------
+                  // Send message
+                  // -------------
+
+                  return sendMessage(data);
+
+               }
+               if (target.owner)
+               {
+
+                  const targetServer = `**\`\`\`${target.name} - Server Tranlation Stats\`\`\`**\n` +
+                  `Server Owner: ${target.owner}\n\n` +
+                  `Server Joined Rita Network: \`\`\`${server[0].createdAt}\`\`\`\n` +
+                  `:bar_chart:  In total **\`${server[0].message}\`** messages in this server have been sent\n\n` +
+                  `:chart_with_upwards_trend:  RITA has translated **\`${server[0].translation}\`**  for this server\n\n` +
+                  `:person_facepalming: Users in Server: **\`${target.memberCount}\`**\n\n` +
+                  `:frame_photo:  A total of **\`${server[0].images}\`**  images have been sent and **\`${server[0].gif}\`** Gif's have been shared\n\n` +
+                  `:flag_white:  **\`${server[0].react}\`**  messages have been translated with flag reactions \n\n` +
+                  `:notebook:  **\`${server[0].embedon}\`**  messages have been sent in **\`Embed On\`** format\n\n` +
+                  `:speech_balloon:  **\`${server[0].embedoff}\`**  messages have been sent in **\`Embed Off\`** format\n`;
+
+                  data.text = `${targetServer}\n\n`;
+
+               }
+               else if (!target.owner)
+               {
+
+                  const targetServer = `**\`\`\`${target.name} - Server Tranlation Stats\`\`\`**\n` +
+                  `Server Owner: Unable to get this information.\n\n` +
+                  `Server Joined Rita Network: \`\`\`${server[0].createdAt}\`\`\`\n` +
+                  `:bar_chart:  In total **\`${server[0].message}\`** messages in this server have been sent\n\n` +
+                  `:chart_with_upwards_trend:  RITA has translated **\`${server[0].translation}\`**  for this server\n\n` +
+                  `:person_facepalming: Users in Server: **\`${target.memberCount}\`**\n\n` +
+                  `:frame_photo:  A total of **\`${server[0].images}\`**  images have been sent and **\`${server[0].gif}\`** Gif's have been shared\n\n` +
+                  `:flag_white:  **\`${server[0].react}\`**  messages have been translated with flag reactions \n\n` +
+                  `:notebook:  **\`${server[0].embedon}\`**  messages have been sent in **\`Embed On\`** format\n\n` +
+                  `:speech_balloon:  **\`${server[0].embedoff}\`**  messages have been sent in **\`Embed Off\`** format\n`;
+
+                  data.text = `${targetServer}\n\n`;
+
+               }
+
+               // -------------
+               // Send message
+               // -------------
+
+               return sendMessage(data);
+
+            }
+         ).catch((err) =>
+         {
+
+            console.log(
+               "error",
+               err,
+               "warning",
+               serverID
+            );
+
+            data.text = `\`\`\`${serverID} is not registered in the database.\n\n\`\`\``;
+            return sendMessage(data);
+
+         });
 
       }
 
@@ -215,13 +307,18 @@ module.exports = function run (data)
 
       }
 
-      data.text = `${globalStats}\n\n${serverStats}`;
+      if (!data.cmd.params)
+      {
 
-      // -------------
-      // Send message
-      // -------------
+         data.text = `${globalStats}\n\n${serverStats}`;
 
-      return sendMessage(data);
+         // -------------
+         // Send message
+         // -------------
+
+         return sendMessage(data);
+
+      }
 
    });
 

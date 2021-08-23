@@ -12,7 +12,7 @@ const sendMessage = require("../../core/command.send");
 // Destination ID handler
 // -----------------------
 
-const destID = function destID (dest, author)
+function destID (dest, author)
 {
 
    if (dest.startsWith("<#"))
@@ -41,9 +41,9 @@ const destID = function destID (dest, author)
    }
    return dest;
 
-};
+}
 
-const destResolver = function destResolver (dest)
+function destResolver (dest)
 {
 
    if (!dest.startsWith("@"))
@@ -54,13 +54,14 @@ const destResolver = function destResolver (dest)
    }
    return dest;
 
-};
+}
 
 // ---------------------
 // Remove from database
 // ---------------------
 
-const shoutTasks = function shoutTasks (res, data,)
+// eslint-disable-next-line no-unused-vars
+function shoutTasks (res, data, origin, dest, destDisplay)
 {
 
    data.color = "ok";
@@ -97,13 +98,13 @@ const shoutTasks = function shoutTasks (res, data,)
 
    return sendMessage(data);
 
-};
+}
 
 // ---------------
 // Database error
 // ---------------
 
-const dbError = function dbError (err, data)
+function dbError (err, data)
 {
 
    data.color = "error";
@@ -122,7 +123,7 @@ const dbError = function dbError (err, data)
       err
    );
 
-};
+}
 
 // --------------------
 // Handle stop command
