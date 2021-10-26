@@ -30,7 +30,7 @@ function sendMessage (data)
          function getServerInfo (server)
          {
 
-            if (server[0].persist === false)
+            if (server[0].persist === false || server[0].persist === 0)
             {
 
                msg.delete({"timeout": time.long}).catch((err) => console.log(
@@ -55,6 +55,10 @@ function sendMessage (data)
 
          if (err.code && err.code === error.perm || error.access)
          {
+
+            const col = "errorcount";
+            const id = data.message.sourceID;
+            db.increaseServersCount(col, id);
 
             // console.log("Error 50013");
             logger(
@@ -84,7 +88,7 @@ function sendMessage (data)
                return console.log(writeErr);
 
             }
-            console.log("DEBUG: Line 68 - Command.Send.js");
+            // console.log("DEBUG: Line 68 - Command.Send.js");
             return data.channel.guild.owner.
                send(writeErr).
                catch((err) => console.log(
